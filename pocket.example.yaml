@@ -1,0 +1,7 @@
+---
+consumer_key: ""
+access_token: ""
+feeds:
+    - url: https://www.example.co.uk/index.xml
+      tags: rss
+      latest_post: ""
