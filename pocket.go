@@ -1,184 +1,25 @@
+// Copyright © 2018 NAME HERE <EMAIL ADDRESS>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
-import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"github.com/mmcdole/gofeed"
-	"github.com/spf13/viper"
-	"net/http"
-	"net/url"
-)
+import "github.com/joshuacrewe/pocket/cmd"
 
-// Set an init function which will get the config via viper and set the Cobra
-// instance going
-// https://github.com/spf13/cobra
-
-// TODO:
-// [X] 1. Update the Yaml file with the latest_post value
-// [ ] 2. Set up commands ( ie. add, remove, open, login etc ) - Cobra
-// [X] 3. URL encode (escape) urls sent to pocket API
-// [ ] 4. Write documentation
-
-type feedItem struct {
-	URL        string `mapstructure:"url"`
-	Tags       string `mapstructure:"tags"`
-	LatestPost string `mapstructure:"latestpost"`
-}
-
-type feeds struct {
-	Feeds []feedItem
-}
+// Load all the commands ( open, add, remove, login etc. )
+// Set the config for the app with viper
+// https://github.com/spf13/cobra#create-rootcmd
 
 func main() {
-	// Set the name for the config file
-	viper.SetConfigName("pocket")
-
-	// Set a path for the config to be found in
-	viper.AddConfigPath(".")
-
-	// Set another path
-	viper.AddConfigPath("$HOME/.config/pocket")
-
-	// Read what the config says
-	err := viper.ReadInConfig()
-
-	// Check for errors
-	if err != nil {
-		// Print the error to the console
-		panic(err)
-	}
-
-	// Create a new struct for feeds
-	f := feeds{}
-
-	// Populate this structure with data from the yaml
-	err = viper.Unmarshal(&f)
-
-	// Check for errors
-	if err != nil {
-		// Print the error to the console
-		panic(err)
-	}
-
-	// Create a new RSS parser instance
-	fp := gofeed.NewParser()
-
-	// Keep a count for the loops
-	i := 0
-
-	// For each of the feeds from the Yaml
-	for _, element := range f.Feeds {
-
-		// Indicate something is happeing
-		fmt.Println("🍺  downloading ", element.URL)
-
-		// parse the RSS url for that feed
-		feed, _ := fp.ParseURL(element.URL)
-
-		// Save the ID for the last post fetched
-		latest := element.LatestPost
-
-		// Save the tags from the yaml
-		tags := element.Tags
-
-		// For each of the items in that feed
-		for _, element := range feed.Items {
-
-			// If the current ID is the last one we got
-			if element.GUID == latest {
-				// Stop looking through the posts
-				break
-			} else {
-				// Send all the newer posts to pocket
-				// fmt.Println("send to Pocket:", element.Link)
-				send(element.Link, tags)
-			}
-		}
-		// Add a space for prettyness
-		fmt.Println()
-
-		// For the current feed update the latest post for the first url
-		// received from the rss parser
-		f.Feeds[i].LatestPost = feed.Items[0].GUID
-
-		// Increase the count
-		i++
-	}
-
-	// Update the configuration file
-	viper.Set("feeds", f.Feeds)
-
-	// Write the current viper config back to the config file
-	// ( with updated latestposts )
-	err = viper.WriteConfig()
-
-	// Check for errors
-	if err != nil {
-		// Print the error to the console
-		panic(err)
-	}
-}
-
-func send(postURL string, Tags string) {
-	// PocketConfig : The Pocket API will need a key and access token to work with
-	type PocketConfig struct {
-		ConsumerKey string `mapstructure:"consumer_key"`
-		AccessToken string `mapstructure:"access_token"`
-	}
-
-	// PostRequest : To construct some json which can be sent to the Pocket API
-	type PostRequest struct {
-		URL   string `json:"url"`
-		Key   string `json:"consumer_key"`
-		Token string `json:"access_token"`
-		Tags  string `json:"tags"`
-	}
-
-	// Get the pocket specific data
-	Config := PocketConfig{}
-
-	// Populate struct with config data
-	err := viper.Unmarshal(&Config)
-
-	// Check for errors
-	if err != nil {
-		// Print the error to the console
-		panic(err)
-	}
-
-	// Pocket API enpoint for adding items
-	baseURL := "https://getpocket.com/v3/add"
-
-	// Encode string as a URL
-	// https://getpocket.com/developer/docs/v3/add - Best Practices
-	u, err := url.Parse(postURL)
-	// Convert encoded URL back to a string
-	URL := u.String()
-
-	// Gather data use use in POST request
-	jsonStr := &PostRequest{URL, Config.ConsumerKey, Config.AccessToken, Tags}
-
-	// Json encode this data
-	b, err := json.Marshal(jsonStr)
-
-	// Configure a new request using the URL and Json
-	req, err := http.NewRequest("POST", baseURL, bytes.NewBuffer(b))
-	req.Header.Set("X-Custom-Header", "myvalue")
-	req.Header.Set("Content-Type", "application/json")
-
-	// Make the HTTP request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-
-	// Handle errors
-	if err != nil {
-		panic(err)
-	}
-
-	// Close the response
-	defer resp.Body.Close()
-
-	// Inform the user which URL has been sent
-	fmt.Println("🚀  ", URL)
+	cmd.Execute()
 }
