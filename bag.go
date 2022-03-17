@@ -17,7 +17,7 @@ import (
 // TODO:
 // [X] 1. Update the Yaml file with the latest_post value
 // [ ] 2. Set up commands ( ie. add, remove, open, login etc ) - Cobra
-// [X] 3. URL encode (escape) urls sent to pocket API
+// [X] 3. URL encode (escape) urls sent to wallabag API
 // [ ] 4. Write documentation
 
 type feedItem struct {
@@ -32,13 +32,13 @@ type feeds struct {
 
 func main() {
 	// Set the name for the config file
-	viper.SetConfigName("pocket")
+	viper.SetConfigName("bag")
 
 	// Set a path for the config to be found in
 	viper.AddConfigPath(".")
 
 	// Set another path
-	viper.AddConfigPath("$HOME/.config/pocket")
+	viper.AddConfigPath("$HOME/.config/bag")
 
 	// Read what the config says
 	err := viper.ReadInConfig()
@@ -90,8 +90,8 @@ func main() {
 				// Stop looking through the posts
 				break
 			} else {
-				// Send all the newer posts to pocket
-				// fmt.Println("send to Pocket:", element.Link)
+				// Send all the newer posts to wallabag
+				// fmt.Println("send to Bag:", element.Link)
 				send(element.Link, tags)
 			}
 		}
@@ -121,22 +121,20 @@ func main() {
 }
 
 func send(postURL string, Tags string) {
-	// PocketConfig : The Pocket API will need a key and access token to work with
-	type PocketConfig struct {
-		ConsumerKey string `mapstructure:"consumer_key"`
+	// BagConfig : The Wallabag API will need a key and access token to work with
+	type BagConfig struct {
+        BaseUrl string `mapstructure:"baseUrl"`
 		AccessToken string `mapstructure:"access_token"`
 	}
 
 	// PostRequest : To construct some json which can be sent to the Pocket API
 	type PostRequest struct {
 		URL   string `json:"url"`
-		Key   string `json:"consumer_key"`
-		Token string `json:"access_token"`
 		Tags  string `json:"tags"`
 	}
 
 	// Get the pocket specific data
-	Config := PocketConfig{}
+	Config := BagConfig{}
 
 	// Populate struct with config data
 	err := viper.Unmarshal(&Config)
@@ -148,7 +146,7 @@ func send(postURL string, Tags string) {
 	}
 
 	// Pocket API enpoint for adding items
-	baseURL := "https://getpocket.com/v3/add"
+	baseURL := Config.BaseUrl + "api/entries.json"
 
 	// Encode string as a URL
 	// https://getpocket.com/developer/docs/v3/add - Best Practices
@@ -157,15 +155,17 @@ func send(postURL string, Tags string) {
 	URL := u.String()
 
 	// Gather data use use in POST request
-	jsonStr := &PostRequest{URL, Config.ConsumerKey, Config.AccessToken, Tags}
+	jsonStr := &PostRequest{URL, Tags}
 
 	// Json encode this data
 	b, err := json.Marshal(jsonStr)
 
+    bearer := "Bearer " + Config.AccessToken
+
 	// Configure a new request using the URL and Json
 	req, err := http.NewRequest("POST", baseURL, bytes.NewBuffer(b))
-	req.Header.Set("X-Custom-Header", "myvalue")
 	req.Header.Set("Content-Type", "application/json")
+    req.Header.Add("Authorization", bearer)
 
 	// Make the HTTP request
 	client := &http.Client{}
