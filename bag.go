@@ -219,6 +219,7 @@ func main() {
 
 	// Keep a count for the loops
 	i := 0
+	// fmt.Println("🐛  ", f.Feeds)
 
 	// For each of the feeds from the Yaml
 	for _, element := range f.Feeds {
@@ -227,7 +228,19 @@ func main() {
 		fmt.Println("🍺  downloading ", element.URL)
 
 		// parse the RSS url for that feed
-		feed, _ := fp.ParseURL(element.URL)
+		feed, err := fp.ParseURL(element.URL)
+
+        if err != nil {
+            // Print the error to the console
+            fmt.Println("🐛  ", err)
+            fmt.Println(" ")
+            i++
+            // return
+            continue
+        }
+
+        // if err == nil {
+            
 
 		// Save the ID for the last post fetched
 		latest := element.LatestPost
@@ -257,6 +270,13 @@ func main() {
 		// For the current feed update the latest post for the first url
 		// received from the rss parser
 		f.Feeds[i].LatestPost = feed.Items[0].Link
+
+        // Update the configuration file
+        viper.Set("feeds", f.Feeds)
+
+        // Write the current viper config back to the config file
+        // ( with updated latestposts )
+        err = viper.WriteConfig()
 
 		// Increase the count
 		i++
