@@ -1,4 +1,4 @@
-module joshuaCrewe/go-rss-pocket
+module joshuaCrewe/go-rss-wallabag
 
 go 1.18
 

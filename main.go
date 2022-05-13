@@ -232,8 +232,8 @@ func main() {
 
         if err != nil {
             // Print the error to the console
-            fmt.Println("🐛  ", err)
-            fmt.Println(" ")
+            // fmt.Println("🐛  ", err)
+            // fmt.Println(" ")
             i++
             // return
             continue
@@ -267,9 +267,11 @@ func main() {
 		// Add a space for prettyness
 		fmt.Println()
 
-		// For the current feed update the latest post for the first url
-		// received from the rss parser
-		f.Feeds[i].LatestPost = feed.Items[0].Link
+        if len(feed.Items) > 0 {
+            // For the current feed update the latest post for the first url
+            // received from the rss parser
+            f.Feeds[i].LatestPost = feed.Items[0].Link
+        }
 
         // Update the configuration file
         viper.Set("feeds", f.Feeds)
@@ -342,8 +344,8 @@ func send(postURL string, Tags string, AccessToken string) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
-	fmt.Println("🐛  ", req)
-	fmt.Println("🐛  ", resp)
+	// fmt.Println("🐛  ", req)
+	// fmt.Println("🐛  ", resp)
 
 	// Handle errors
 	if err != nil {
