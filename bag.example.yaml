@@ -1,6 +1,9 @@
 ---
-access_token: ""
 baseurl: "app.wallabag.it/"
+client_id: ""
+client_secret: ""
+username: ""
+password: ""
 feeds:
     - url: https://www.example.co.uk/index.xml
       tags: rss
