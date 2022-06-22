@@ -1,4 +1,4 @@
-package main
+package gobag
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"net/url"
 )
 
-func send(postURL string, Tags string, AccessToken string) {
+func Send(postURL string, Tags string, AccessToken string) {
 
 	// PostRequest : To construct some json which can be sent to the Pocket API
 	type PostRequest struct {

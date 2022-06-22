@@ -1,4 +1,4 @@
-package run
+package gobag
 
 import (
 	"encoding/json"
@@ -22,7 +22,7 @@ type feeds struct {
 	Feeds []feedItem
 }
 
-func run() {
+func Run() {
     viper.SetConfigType("yaml")
 
 	// Set the name for the config file
@@ -44,7 +44,7 @@ func run() {
 		panic(err)
 	}
 
-    auth := auth()
+    auth := Auth()
     var response Response
 
     err = json.Unmarshal([]byte(auth), &response)
@@ -132,7 +132,7 @@ func run() {
 				// fmt.Println("send to Bag:", element.Link)
 				// fmt.Println("Current:", element.GUID)
 				// fmt.Println("send to Bag:", tags)
-				send(element.Link, tags, response.AccessToken)
+				Send(element.Link, tags, response.AccessToken)
 			}
 		}
 		// Add a space for prettyness

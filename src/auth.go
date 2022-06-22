@@ -1,4 +1,4 @@
-package main
+package gobag
 
 import (
 	"bytes"
@@ -19,7 +19,7 @@ type BagConfig struct {
     Password string `mapstructure:"password"`
 }
 
-func auth() string {
+func Auth() string {
 	type PostRequest struct {
         GrantType string `json:"grant_type"`
         ClientID string `json:"client_id"`
