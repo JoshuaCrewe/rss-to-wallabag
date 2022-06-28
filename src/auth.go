@@ -3,11 +3,12 @@ package gobag
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"github.com/spf13/viper"
-	    "io"
-	    "log"
+    "io"
+    "log"
 	"net/http"
+    "os/exec"
 )
 
 type BagConfig struct {
@@ -66,12 +67,13 @@ func Auth() string {
         // Pocket API enpoint for adding items
         baseURL := Config.BaseUrl + "oauth/v2/token"
 
+        // fmt.Println("🍺  Do Auth ", getCreds(Config.ClientID))
         jsonStr := &PostRequest{
             "password",
-            Config.ClientID,
-            Config.ClientSecret,
-            Config.UserName,
-            Config.Password,
+            getCreds(Config.ClientID),
+            getCreds(Config.ClientSecret),
+            getCreds(Config.UserName),
+            getCreds(Config.Password),
         }
 
         // fmt.Println("🍺  jsonStr ", jsonStr)
@@ -90,7 +92,7 @@ func Auth() string {
 
         client := &http.Client{}
         resp, err := client.Do(req)
-        fmt.Println("🍺  after auth ", resp.Body)
+        // fmt.Println("🍺  after auth ", resp.Body)
 
         // Check for errors
         if err != nil {
@@ -101,7 +103,7 @@ func Auth() string {
         defer resp.Body.Close()
 
 
-        fmt.Println("🍺  The Response ", resp.Body)
+        // fmt.Println("🍺  The Response ", resp.Body)
 
         b, err = io.ReadAll(resp.Body)
         if err != nil {
@@ -111,4 +113,13 @@ func Auth() string {
         return string(b)
     }
     return ""
+}
+
+func getCreds(key string) (value string) {
+    if key[0:2] == "$(" {
+        cmd := key[2:len(key)-1]
+        secret, _ := exec.Command("bash", "-c", cmd).Output()
+        return string(secret)
+    }
+    return string(key)
 }

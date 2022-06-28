@@ -26,14 +26,13 @@ func Run() {
     viper.SetConfigType("yaml")
 
 	// Set the name for the config file
-	viper.SetConfigName("bag")
+	viper.SetConfigName("config")
 
 	// Set a path for the config to be found in
 	viper.AddConfigPath(".")
 
 	// Set another path
-	viper.AddConfigPath("$HOME/.config/bag")
-
+	viper.AddConfigPath("$HOME/.local/share/go-rss-to-wallabag")
 
 	// Read what the config says
 	err := viper.ReadInConfig()
@@ -49,7 +48,7 @@ func Run() {
 
     err = json.Unmarshal([]byte(auth), &response)
 
-    fmt.Println("🍺  response ", response.AccessToken)
+    // fmt.Println("🍺  response ", auth)
 
 	// Get the pocket specific data
 	Config := BagConfig{}
