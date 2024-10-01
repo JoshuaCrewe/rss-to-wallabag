@@ -67,5 +67,5 @@ func Send(postURL string, Tags string, AccessToken string) {
 	defer resp.Body.Close()
 
 	// Inform the user which URL has been sent
-	fmt.Println("🚀  ", URL)
+	fmt.Println("🚀 ", URL)
 }
