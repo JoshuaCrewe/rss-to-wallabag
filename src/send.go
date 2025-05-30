@@ -9,12 +9,14 @@ import (
 	"net/url"
 )
 
-func Send(postURL string, Tags string, AccessToken string) {
+func Send(postURL string, Tags string, Title string, Content string, AccessToken string) {
 
 	// PostRequest : To construct some json which can be sent to the Pocket API
 	type PostRequest struct {
 		URL   string `json:"url"`
 		Tags  string `json:"tags"`
+		Title  string `json:"title"`
+		Content  string `json:"content"`
 	}
 
 	// Get the pocket specific data
@@ -39,12 +41,13 @@ func Send(postURL string, Tags string, AccessToken string) {
 	URL := u.String()
 
 	// Gather data use use in POST request
-	jsonStr := &PostRequest{URL, Tags}
+	jsonStr := &PostRequest{URL, Tags, Title, Content}
 
 	// Json encode this data
 	b, err := json.Marshal(jsonStr)
 
-    bearer := "Bearer " + AccessToken
+	// fmt.Println("send to Bag:", bytes.NewBuffer(b))
+	bearer := "Bearer " + AccessToken
 
 	// Configure a new request using the URL and Json
 	req, err := http.NewRequest("POST", baseURL, bytes.NewBuffer(b))
