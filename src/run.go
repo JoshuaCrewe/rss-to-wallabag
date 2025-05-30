@@ -16,6 +16,7 @@ type feedItem struct {
 	URL        string `mapstructure:"url"`
 	Tags       string `mapstructure:"tags"`
 	LatestPost string `mapstructure:"latestpost"`
+	LocalFetch bool   `mapstructure:"localfetch"`
 }
 
 type feeds struct {
@@ -119,19 +120,31 @@ func Run() {
 		tags := element.Tags
 
 		// For each of the items in that feed
-		for _, element := range feed.Items {
+		for _, item := range feed.Items {
 
 			// If the current ID is the last one we got
-			if element.Link == latest {
+			if item.Link == latest {
 				// Stop looking through the posts
 				break
 			} else {
 				// Send all the newer posts to wallabag
-				// fmt.Println("Element:", (element))
-				// fmt.Println("send to Bag:", element.Link)
-				// fmt.Println("Current:", element.GUID)
+				// fmt.Println("Latest:", (latest))
+				// fmt.Println("Element:", (item.Title))
+				// fmt.Println("Element:", (item.Description))
+				// fmt.Println("send to Bag:", item.Link)
+				// fmt.Println("Current:", item.GUID)
 				// fmt.Println("send to Bag:", tags)
-				Send(element.Link, tags, response.AccessToken)
+
+				var Content, Title string
+				Content = ""
+				Title = ""
+
+				if element.LocalFetch {
+					Content = item.Description
+					Title = item.Title
+					// fmt.Println("Is Local")
+				}
+				Send(item.Link, tags, Title, Content, response.AccessToken)
 			}
 		}
 		// Add a space for prettyness
